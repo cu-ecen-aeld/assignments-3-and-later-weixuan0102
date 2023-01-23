@@ -1,4 +1,9 @@
 #include "systemcalls.h"
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h> 
+#include <sys/wait.h>
+#include <fcntl.h>
 
 /**
  * @param cmd the command to execute with system()
@@ -16,6 +21,10 @@ bool do_system(const char *cmd)
  *   and return a boolean true if the system() call completed with success
  *   or false() if it returned a failure
 */
+    int status_code = system(cmd);
+    if(status_code == -1){
+	return false;	    	
+    }
 
     return true;
 }
@@ -58,6 +67,41 @@ bool do_exec(int count, ...)
  *   as second argument to the execv() command.
  *
 */
+    pid_t PID = fork();
+    int status;
+    if(PID == -1){
+        perror("fork()");
+	return false;
+    }
+    else if(PID == 0){    
+	execv(command[0],command);
+	printf("*** ERROR: exec failed with return value -1\n");	
+	perror("execv");
+	_exit(1);
+    }
+    		
+    pid_t ret = waitpid(PID, &status, 0);
+    if(ret == -1){
+	    perror("wait error");
+	    return false;		
+    }
+    if(ret > 0){
+    	if(WIFEXITED(status) && !WEXITSTATUS(status)){
+		printf("Program terminated successfully \n");
+	}else if(WIFEXITED(status) && WEXITSTATUS(status)){
+		if(WEXITSTATUS(status) == 1){
+                    printf("Command %s returned not zero exit code %d\n", command[0], WEXITSTATUS (status));
+                    return false;
+		}else{
+			printf("Command %s returned not zero exit code %d\n", command[0], WEXITSTATUS (status));
+                    return false;
+		}
+    	}else{
+		printf("The program didn't terminate normally \n");
+                return false;	
+	}
+
+    }
 
     va_end(args);
 
@@ -93,6 +137,42 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *
 */
 
+    pid_t PID = fork();
+    int status;
+    if(PID == -1){
+        perror("fork()");
+        return false;
+    }
+    else if(PID == 0){
+	int fd = open(outputfile, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+	dup2(fd, 1);    
+        execv(command[0],command);
+	close(fd);
+        _exit(1);
+    }
+
+    pid_t ret = waitpid(PID, &status, 0);
+    if(ret == -1){
+            perror("wait error");
+            return false;
+    }
+    if(ret > 0){
+        if(WIFEXITED(status) && !WEXITSTATUS(status)){
+                printf("Program terminated successfully \n");
+        }else if(WIFEXITED(status) && WEXITSTATUS(status)){
+                if(WEXITSTATUS(status) == 1){
+                    printf("Command %s returned not zero exit code %d\n", command[0], WEXITSTATUS (status));
+                    return false;
+                }else{
+                        printf("Command %s returned not zero exit code %d\n", command[0], WEXITSTATUS (status));
+                    return false;
+                }
+        }else{
+                printf("The program didn't terminate normally \n");
+                return false;
+        }
+    }
+    
     va_end(args);
 
     return true;
