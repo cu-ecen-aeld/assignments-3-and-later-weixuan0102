@@ -81,7 +81,7 @@ fi
 
 # TODO: Make and install busybox
 make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE}
-sudo make CONFIG_PREFIX=${OUTDIR}/rootfs ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} install
+make CONFIG_PREFIX=${OUTDIR}/rootfs ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} install
 
 cd ${OUTDIR}/rootfs
 echo "Library dependencies"
@@ -98,14 +98,14 @@ export SYSROOT=$(${CROSS_COMPILE}gcc -print-sysroot)
 #ls -l lib64/libc.so.6
 
 cd "${OUTDIR}/rootfs"
-sudo cp -a $SYSROOT/lib/ld-linux-aarch64.so.1 lib
-sudo cp -a $SYSROOT/lib64/ld-2.31.so lib64
-sudo cp -a $SYSROOT/lib64/libm.so.6 lib64
-sudo cp -a $SYSROOT/lib64/libm-2.31.so lib64
-sudo cp -a $SYSROOT/lib64/libresolv.so.2 lib64
-sudo cp -a $SYSROOT/lib64/libresolv-2.31.so lib64
-sudo cp -a $SYSROOT/lib64/libc.so.6 lib64
-sudo cp -a $SYSROOT/lib64/libc-2.31.so lib64
+cp -a $SYSROOT/lib/ld-linux-aarch64.so.1 lib
+cp -a $SYSROOT/lib64/ld-2.31.so lib64
+cp -a $SYSROOT/lib64/libm.so.6 lib64
+cp -a $SYSROOT/lib64/libm-2.31.so lib64
+cp -a $SYSROOT/lib64/libresolv.so.2 lib64
+cp -a $SYSROOT/lib64/libresolv-2.31.so lib64
+cp -a $SYSROOT/lib64/libc.so.6 lib64
+cp -a $SYSROOT/lib64/libc-2.31.so lib64
 
 # TODO: Make device nodes
 sudo mknod -m 666 dev/null c 1 3
